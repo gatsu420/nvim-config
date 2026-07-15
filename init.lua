@@ -787,6 +787,10 @@ require('lazy').setup({
         -- clangd = {},
         gopls = {},
         pylsp = {},
+        ts_ls = {},
+        -- oxlint handled via conform.nvim below (not an LSP)
+        cssls = {},
+        html = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -794,7 +798,6 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
         --
         lua_ls = {
           -- cmd = { ... },
@@ -828,6 +831,8 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'prettierd', -- Used to format JS/TS/CSS/HTML
+        'oxlint', -- Used to lint JS/TS
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -880,11 +885,22 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
-        -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
-        --
-        -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        javascript = { 'oxlint', 'prettierd', 'prettier', stop_after_first = false },
+        typescript = { 'oxlint', 'prettierd', 'prettier', stop_after_first = false },
+        javascriptreact = { 'oxlint', 'prettierd', 'prettier', stop_after_first = false },
+        typescriptreact = { 'oxlint', 'prettierd', 'prettier', stop_after_first = false },
+        css = { 'prettierd', 'prettier', stop_after_first = true },
+        html = { 'prettierd', 'prettier', stop_after_first = true },
+        json = { 'prettierd', 'prettier', stop_after_first = true },
+        yaml = { 'prettierd', 'prettier', stop_after_first = true },
+        markdown = { 'prettierd', 'prettier', stop_after_first = true },
+      },
+      formatters = {
+        oxlint = {
+          command = 'oxlint',
+          args = { '--fix', '$FILENAME' },
+          stdin = false,
+        },
       },
     },
   },
@@ -1056,7 +1072,7 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'css', 'diff', 'html', 'javascript', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'tsx', 'typescript', 'vim', 'vimdoc' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
