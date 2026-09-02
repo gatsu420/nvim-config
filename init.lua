@@ -165,6 +165,22 @@ vim.o.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.o.scrolloff = 10
 
+-- Tabline with tab numbers
+vim.o.tabline = '%!v:lua.MyTabline()'
+function _G.MyTabline()
+  local tabs = {}
+  for i = 1, vim.fn.tabpagenr('$') do
+    local buflist = vim.fn.tabpagebuflist(i)
+    local winnr = vim.fn.tabpagewinnr(i)
+    local bufnr = buflist[winnr]
+    local name = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ':t')
+    if name == '' then name = '[No Name]' end
+    local hl = (i == vim.fn.tabpagenr()) and '%#TabLineSel#' or '%#TabLine#'
+    tabs[i] = string.format('%s %d: %s ', hl, i, name)
+  end
+  return table.concat(tabs) .. '%#TabLineFill#'
+end
+
 -- if performing an operation that would fail due to unsaved changes in the buffer (like `:q`),
 -- instead raise a dialog asking if you wish to save the current file(s)
 -- See `:help 'confirm'`
