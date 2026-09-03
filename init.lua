@@ -165,6 +165,25 @@ vim.o.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.o.scrolloff = 10
 
+-- Tabline with tab numbers
+vim.o.tabline = '%!v:lua.MyTabline()'
+function _G.MyTabline()
+  local tabs = {}
+  local cur = vim.fn.tabpagenr()
+  for i = 1, vim.fn.tabpagenr('$') do
+    local buflist = vim.fn.tabpagebuflist(i)
+    local winnr = vim.fn.tabpagewinnr(i)
+    local bufnr = buflist[winnr]
+    local name = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ':t')
+    if name == '' then name = '[No Name]' end
+    local hl = (i == cur) and '%#TabLineSel#' or '%#TabLine#'
+    local sep = (i < vim.fn.tabpagenr('$')) and '%#TabLineFill# │ ' or ''
+    tabs[i] = string.format('%s %d: %s%s', hl, i, name, sep)
+  end
+  return table.concat(tabs) .. '%#TabLineFill#'
+end
+
+
 -- if performing an operation that would fail due to unsaved changes in the buffer (like `:q`),
 -- instead raise a dialog asking if you wish to save the current file(s)
 -- See `:help 'confirm'`
@@ -1023,6 +1042,11 @@ require('lazy').setup({
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
       vim.cmd.colorscheme 'tokyonight-night'
+
+      -- TokyoNight-compatible tabline highlights (after colorscheme to prevent override)
+      vim.api.nvim_set_hl(0, 'TabLineSel', { bold = true, fg = '#1a1b26', bg = '#9ece6a' })
+      vim.api.nvim_set_hl(0, 'TabLine', { fg = '#a9b1d6', bg = '#24283b' })
+      vim.api.nvim_set_hl(0, 'TabLineFill', { bg = '#16161e' })
     end,
   },
 
